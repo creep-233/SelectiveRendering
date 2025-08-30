@@ -1,0 +1,9 @@
+{
+	"RemapUnityFiles": 
+	{
+		"Module.SelectiveRenderingSPP.cpp.obj": [
+			"PerModuleInline.gen.cpp.obj",
+			"SelectiveRenderingSPP.cpp.obj"
+		]
+	}
+}

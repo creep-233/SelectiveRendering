@@ -1,0 +1,52 @@
+// 引入基础库
+#include "SceneTextureParameters.ush"
+#include "SceneTexturesCommon.ush"
+
+// 需要计算的变量
+uniform float Threshold;
+uniform float Boost;
+uniform float Decay;
+
+// 输入结构体，通常由渲染引擎自动填充
+struct VSInput
+{
+    float2 TexCoord : TEXCOORD0; // 输入的纹理坐标
+};
+
+// 输出结构体，通常由渲染引擎自动设置
+struct PSOutput
+{
+    float4 Color : SV_Target; // 输出的颜色
+};
+
+// 示例：Saliency计算
+float SaliencyCalculation(float2 UV)
+{
+    // 从场景纹理中采样
+    float3 SceneColor = SceneTextureLookup(UV, 14).rgb; // 14代表SceneColor纹理
+    
+    // 根据计算公式或任何自定义方式来计算Saliency值
+    float saliency = dot(SceneColor, float3(0.299, 0.587, 0.114)); // 亮度计算作为示例
+    
+    saliency = pow(saliency, Boost); // 可选的增强处理
+    saliency = max(saliency - Threshold, 0.0); // 可选的阈值控制
+    
+    return saliency;
+}
+
+// 主要计算函数
+PSOutput main(VSInput In)
+{
+    PSOutput OutColor;
+
+    // UV采样位置
+    float2 UV = In.TexCoord;
+    
+    // 调用Saliency计算函数
+    float saliency = SaliencyCalculation(UV);
+    
+    // 输出计算结果
+    OutColor.Color = float4(saliency, saliency, saliency, 1.0); // 颜色输出
+
+    return OutColor;
+}

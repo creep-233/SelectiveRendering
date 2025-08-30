@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\selectiverenderingspp\\module.selectiverenderingspp.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\intermediate\\build\\win64\\x64\\selectiverenderingeditor\\development\\unrealed\\sharedpch.unrealed.cpp20.h.pch",
+        "Includes": [
+            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\selectiverenderingspp\\definitions.selectiverenderingspp.h",
+            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\selectiverenderingspp\\permoduleinline.gen.cpp",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\core\\public\\hal\\permoduleinline.inl"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

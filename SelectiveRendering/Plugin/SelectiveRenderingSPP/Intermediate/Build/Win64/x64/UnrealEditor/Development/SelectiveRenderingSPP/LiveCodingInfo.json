@@ -2,8 +2,12 @@
 	"RemapUnityFiles": 
 	{
 		"Module.SelectiveRenderingSPP.cpp.obj": [
+			"SelectiveRenderingSPP.init.gen.cpp.obj",
+			"SelectiveRenderingSPPSubsystem.gen.cpp.obj",
 			"PerModuleInline.gen.cpp.obj",
-			"SelectiveRenderingSPP.cpp.obj"
+			"SelectiveRenderingSPP.cpp.obj",
+			"SelectiveRenderingSPPBridge.cpp.obj",
+			"SelectiveRenderingSPPSubsystem.cpp.obj"
 		]
 	}
 }

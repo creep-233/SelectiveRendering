@@ -3,10 +3,18 @@
     "Data": {
         "Source": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\source\\selectiverenderingspp\\private\\selectiverenderingspp.cpp",
         "ProvidedModule": "",
-        "PCH": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\intermediate\\build\\win64\\x64\\selectiverenderingeditor\\development\\unrealed\\sharedpch.unrealed.cpp20.h.pch",
+        "PCH": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\intermediate\\build\\win64\\x64\\selectiverenderingeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
         "Includes": [
             "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\selectiverenderingspp\\definitions.selectiverenderingspp.h",
-            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\source\\selectiverenderingspp\\public\\selectiverenderingspp.h"
+            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\source\\selectiverenderingspp\\public\\selectiverenderingspp.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\interfaces\\ipluginmanager.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\plugindescriptor.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\custombuildsteps.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\localizationdescriptor.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\moduledescriptor.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\plugindisalloweddescriptor.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\pluginreferencedescriptor.h",
+            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\projects\\public\\versescope.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

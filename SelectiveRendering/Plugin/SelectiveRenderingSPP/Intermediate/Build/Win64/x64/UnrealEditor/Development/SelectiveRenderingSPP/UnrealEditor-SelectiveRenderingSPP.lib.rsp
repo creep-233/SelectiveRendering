@@ -6,8 +6,10 @@
 /NAME:"UnrealEditor-SelectiveRenderingSPP.dll"
 /IGNORE:4221
 /NODEFAULTLIB
-"D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Intermediate\Build\Win64\x64\SelectiveRenderingEditor\Development\UnrealEd\SharedPCH.UnrealEd.Cpp20.h.obj"
+"D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Intermediate\Build\Win64\x64\SelectiveRenderingEditor\Development\UnrealEd\SharedPCH.UnrealEd.Project.ValApi.Cpp20.h.obj"
 "D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Plugins\SelectiveRenderingSPP\Intermediate\Build\Win64\x64\UnrealEditor\Development\SelectiveRenderingSPP\Module.SelectiveRenderingSPP.cpp.obj"
 "D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Plugins\SelectiveRenderingSPP\Intermediate\Build\Win64\x64\UnrealEditor\Development\SelectiveRenderingSPP\SelectiveRenderingSPP.cpp.obj"
+"D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Plugins\SelectiveRenderingSPP\Intermediate\Build\Win64\x64\UnrealEditor\Development\SelectiveRenderingSPP\SelectiveRenderingSPPBridge.cpp.obj"
+"D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Plugins\SelectiveRenderingSPP\Intermediate\Build\Win64\x64\UnrealEditor\Development\SelectiveRenderingSPP\SelectiveRenderingSPPSubsystem.cpp.obj"
 "D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Plugins\SelectiveRenderingSPP\Intermediate\Build\Win64\x64\UnrealEditor\Development\SelectiveRenderingSPP\Default.rc2.res"
 /OUT:"D:\Dev\project\UE5\SelectiveRendering\SelectiveRendering\Plugins\SelectiveRenderingSPP\Intermediate\Build\Win64\x64\UnrealEditor\Development\SelectiveRenderingSPP\UnrealEditor-SelectiveRenderingSPP.lib"

@@ -1,41 +1,20 @@
-//{
-//	"FileVersion": 3,
-//	"Version": 1,
-//	"VersionName": "1.0",
-//	"FriendlyName": "SelectiveRenderingSPP",
-//	"Description": "SelectiveRenderingSPP",
-//	"Category": "Other",
-//	"CreatedBy": "",
-//	"CreatedByURL": "",
-//	"DocsURL": "",
-//	"MarketplaceURL": "",
-//	"SupportURL": "",
-//	"CanContainContent": true,
-//	"IsBetaVersion": false,
-//	"IsExperimentalVersion": false,
-//	"Installed": false,
-//	"Modules": [
-//		{
-//			"Name": "SelectiveRenderingSPP",
-//			"Type": "Runtime",
-//			"LoadingPhase": "Default"
-//		}
-//	]
-//}
-
 {
   "FileVersion": 3,
+  "Version": 1,
   "VersionName": "0.1",
   "FriendlyName": "Selective Rendering SPP",
-  "Description": "Composite low/high with saliency mask in RDG.",
+  "Description": "Selective rendering post-process hook with custom shaders.",
   "Category": "Rendering",
+  "CreatedBy": "Me",
+  "CreatedByURL": "",
   "EnabledByDefault": true,
+  "CanContainContent": false,
   "Modules": [
     {
       "Name": "SelectiveRenderingSPP",
       "Type": "Runtime",
       "LoadingPhase": "Default"
     }
-  ]
+  ],
+  "SupportedTargetPlatforms": [ "Win64" ]
 }
-

@@ -1,15 +1,24 @@
-// Private/SelectiveRenderingSPPBridge.cpp
 #include "SelectiveRenderingSPPBridge.h"
-#include "SelectiveRenderingSPPShaders.h"     // ★ 若 Build.cs 设置了 PrivatePCHHeaderFile，必须第一行
+#include "SelectiveRenderingSPP.h"                 // 放第一行（模块 PCH）
 #include "SelectiveRenderingSPPSubsystem.h"
 #include "Engine/TextureRenderTarget2D.h"
-#include "RHICommandList.h"                   // FRHICommandListImmediate
+#include "RHICommandList.h"
+
+// 由 Shaders.cpp 提供实现，这里只做声明
+void EnqueueSelectiveComposite(
+    FRHICommandListImmediate& RHICmdList,
+    const FTextureRHIRef& OutRHI,
+    const FTextureRHIRef& LowRHI,
+    const FTextureRHIRef& HighRHI,
+    const FTextureRHIRef& SalRHI,
+    float Threshold,
+    float Boost);
 
 void FSelectiveBridgeSPP::PushFromGameThread(USelectiveRenderingSPPSubsystem* Subsys)
 {
     if (!Subsys || !Subsys->IsEnabled()) return;
 
-    UTextureRenderTarget2D* OutRT = Subsys->GetHighRT();   // 或你期望的输出 RT
+    UTextureRenderTarget2D* OutRT = Subsys->GetOutRT();
     UTextureRenderTarget2D* LowRT = Subsys->GetLowRT();
     UTextureRenderTarget2D* HighRT = Subsys->GetHighRT();
     UTextureRenderTarget2D* MaskRT = Subsys->GetMaskRT();
@@ -20,13 +29,12 @@ void FSelectiveBridgeSPP::PushFromGameThread(USelectiveRenderingSPPSubsystem* Su
     FTextureRHIRef HighRHI = HighRT->GetRenderTargetResource()->GetRenderTargetTexture();
     FTextureRHIRef SalRHI = MaskRT->GetRenderTargetResource()->GetRenderTargetTexture();
 
-    const float Threshold = 0.5f;
-    const float Boost = 0.0f;
+    const float Threshold = Subsys->GetThreshold();
+    const float Boost = Subsys->GetBoost();
 
     ENQUEUE_RENDER_COMMAND(SPP_Composite)(
         [OutRHI, LowRHI, HighRHI, SalRHI, Threshold, Boost](FRHICommandListImmediate& RHICmdList)
         {
-            // 这个函数原型在 SelectiveRenderingSPPShaders.h 里已经声明
             EnqueueSelectiveComposite(RHICmdList, OutRHI, LowRHI, HighRHI, SalRHI, Threshold, Boost);
         });
 }

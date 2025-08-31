@@ -24,13 +24,7 @@ struct Z_Construct_UFunction_USelectiveRenderingSPPSubsystem_SRSPP_CompositeNow_
 #if WITH_METADATA
 	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
 		{ "Category", "SelectiveRenderingSPP" },
-#if !UE_BUILD_SHIPPING
-		{ "Comment", "// \xc3\xbf\xd6\xa1\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xc3\xa3\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xd2\xaa\xca\xb1\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xc3\xa3\xef\xbf\xbd\n" },
-#endif
 		{ "ModuleRelativePath", "Public/SelectiveRenderingSPPSubsystem.h" },
-#if !UE_BUILD_SHIPPING
-		{ "ToolTip", "\xc3\xbf\xd6\xa1\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xc3\xa3\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xd2\xaa\xca\xb1\xef\xbf\xbd\xef\xbf\xbd\xef\xbf\xbd\xc3\xa3\xef\xbf\xbd" },
-#endif
 	};
 #endif // WITH_METADATA
 	static const UECodeGen_Private::FFunctionParams FuncParams;
@@ -180,13 +174,14 @@ struct Z_Construct_UClass_USelectiveRenderingSPPSubsystem_Statics
 {
 #if WITH_METADATA
 	static constexpr UECodeGen_Private::FMetaDataPairParam Class_MetaDataParams[] = {
+		{ "BlueprintType", "true" },
 		{ "IncludePath", "SelectiveRenderingSPPSubsystem.h" },
 		{ "ModuleRelativePath", "Public/SelectiveRenderingSPPSubsystem.h" },
 	};
 #endif // WITH_METADATA
 	static UObject* (*const DependentSingletons[])();
 	static constexpr FClassFunctionLinkInfo FuncInfo[] = {
-		{ &Z_Construct_UFunction_USelectiveRenderingSPPSubsystem_SRSPP_CompositeNow, "SRSPP_CompositeNow" }, // 339294625
+		{ &Z_Construct_UFunction_USelectiveRenderingSPPSubsystem_SRSPP_CompositeNow, "SRSPP_CompositeNow" }, // 3652186414
 		{ &Z_Construct_UFunction_USelectiveRenderingSPPSubsystem_SRSPP_SetParams, "SRSPP_SetParams" }, // 3167916586
 		{ &Z_Construct_UFunction_USelectiveRenderingSPPSubsystem_SRSPP_SetTargets, "SRSPP_SetTargets" }, // 2349568963
 	};
@@ -237,10 +232,10 @@ USelectiveRenderingSPPSubsystem::~USelectiveRenderingSPPSubsystem() {}
 struct Z_CompiledInDeferFile_FID_project_UE5_SelectiveRendering_SelectiveRendering_Plugins_SelectiveRenderingSPP_Source_SelectiveRenderingSPP_Public_SelectiveRenderingSPPSubsystem_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_USelectiveRenderingSPPSubsystem, USelectiveRenderingSPPSubsystem::StaticClass, TEXT("USelectiveRenderingSPPSubsystem"), &Z_Registration_Info_UClass_USelectiveRenderingSPPSubsystem, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USelectiveRenderingSPPSubsystem), 1835807679U) },
+		{ Z_Construct_UClass_USelectiveRenderingSPPSubsystem, USelectiveRenderingSPPSubsystem::StaticClass, TEXT("USelectiveRenderingSPPSubsystem"), &Z_Registration_Info_UClass_USelectiveRenderingSPPSubsystem, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(USelectiveRenderingSPPSubsystem), 1425904817U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_project_UE5_SelectiveRendering_SelectiveRendering_Plugins_SelectiveRenderingSPP_Source_SelectiveRenderingSPP_Public_SelectiveRenderingSPPSubsystem_h_1318259616(TEXT("/Script/SelectiveRenderingSPP"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_project_UE5_SelectiveRendering_SelectiveRendering_Plugins_SelectiveRenderingSPP_Source_SelectiveRenderingSPP_Public_SelectiveRenderingSPPSubsystem_h_3331668273(TEXT("/Script/SelectiveRenderingSPP"),
 	Z_CompiledInDeferFile_FID_project_UE5_SelectiveRendering_SelectiveRendering_Plugins_SelectiveRenderingSPP_Source_SelectiveRenderingSPP_Public_SelectiveRenderingSPPSubsystem_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_project_UE5_SelectiveRendering_SelectiveRendering_Plugins_SelectiveRenderingSPP_Source_SelectiveRenderingSPP_Public_SelectiveRenderingSPPSubsystem_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

@@ -3,7 +3,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "SelectiveRenderingSPPSubsystem.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class SELECTIVERENDERINGSPP_API USelectiveRenderingSPPSubsystem : public UGameInstanceSubsystem
 {
     GENERATED_BODY()
@@ -14,11 +14,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "SelectiveRenderingSPP")
     void SRSPP_SetParams(float InThreshold, float InBoost);
 
-    // 每帧调用（或需要时调用）
     UFUNCTION(BlueprintCallable, Category = "SelectiveRenderingSPP")
     void SRSPP_CompositeNow();
 
-    // 供渲染桥接访问
     FORCEINLINE class UTextureRenderTarget2D* GetOutRT()  const { return OutRT.Get(); }
     FORCEINLINE class UTextureRenderTarget2D* GetLowRT()  const { return LowRT.Get(); }
     FORCEINLINE class UTextureRenderTarget2D* GetHighRT() const { return HighRT.Get(); }

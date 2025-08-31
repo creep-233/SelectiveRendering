@@ -1,31 +1,25 @@
-//// Copyright Epic Games, Inc. All Rights Reserved.
-//
-//#include "SelectiveRenderingSPP.h"
-//
-//#define LOCTEXT_NAMESPACE "FSelectiveRenderingSPPModule"
-//
-//void FSelectiveRenderingSPPModule::StartupModule()
-//{
-//	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-//}
-//
-//void FSelectiveRenderingSPPModule::ShutdownModule()
-//{
-//	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-//	// we call this function before unloading the module.
-//}
-//
-//#undef LOCTEXT_NAMESPACE
-//	
-//IMPLEMENT_MODULE(FSelectiveRenderingSPPModule, SelectiveRenderingSPP)
+#include "SelectiveRenderingSPP.h"
+#include "Interfaces/IPluginManager.h"
+#include "ShaderCore.h"
+#include "Misc/Paths.h"
+#include "Modules/ModuleManager.h"
+#include "Logging/LogMacros.h"
 
+DEFINE_LOG_CATEGORY_STATIC(LogSelectiveRenderingSPP, Log, All);
 
+class FSelectiveRenderingSPPModule : public IModuleInterface
+{
+public:
+    virtual void StartupModule() override
+    {
+        const FString BaseDir = IPluginManager::Get().FindPlugin(TEXT("SelectiveRenderingSPP"))->GetBaseDir();
+        const FString ShaderDir = FPaths::Combine(BaseDir, TEXT("Shader"));
 
-#include "SelectiveRenderingSPPSubsystem.h"
-#include "SelectiveRenderingSPPBridge.h"
+        AddShaderSourceDirectoryMapping(TEXT("/SelectiveRenderingSPP"), ShaderDir);
+        UE_LOG(LogSelectiveRenderingSPP, Display, TEXT("Map /SelectiveRenderingSPP -> %s"), *ShaderDir);
+    }
 
-void USelectiveRenderingSPPSubsystem::SetEnabled(bool b) { bEnabled = b; }
-void USelectiveRenderingSPPSubsystem::SetMaskRT(UTextureRenderTarget2D* In) { MaskRT = In; }
-void USelectiveRenderingSPPSubsystem::SetLowRT(UTextureRenderTarget2D* In) { LowRT = In; }
-void USelectiveRenderingSPPSubsystem::SetHighRT(UTextureRenderTarget2D* In) { HighRT = In; }
-void USelectiveRenderingSPPSubsystem::PushToRHI() { FSelectiveBridgeSPP::PushFromGameThread(this); }
+    virtual void ShutdownModule() override {}
+};
+
+IMPLEMENT_MODULE(FSelectiveRenderingSPPModule, SelectiveRenderingSPP)

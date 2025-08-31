@@ -53,8 +53,6 @@
 //}
 
 
-
-
 using UnrealBuildTool;
 
 public class SelectiveRenderingSPP : ModuleRules
@@ -68,7 +66,7 @@ public class SelectiveRenderingSPP : ModuleRules
         });
 
         PrivateDependencyModuleNames.AddRange(new[] {
-            "RenderCore", "RHI", "Renderer", "Projects"
+            "RenderCore", "RHI", "Renderer", "Projects", "ShaderCore"
         });
     }
 }

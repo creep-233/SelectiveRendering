@@ -1,7 +1,11 @@
 #pragma once
+#include "CoreMinimal.h"
+
 class USelectiveRenderingSPPSubsystem;
 
-struct FSelectiveBridgeSPP
+class SELECTIVERENDERINGSPP_API FSelectiveBridgeSPP
 {
-    static void PushFromGameThread(USelectiveRenderingSPPSubsystem* Subsystem);
+public:
+    // 从游戏线程丢一个“本帧合成”命令到渲染线程
+    static void PushFromGameThread(USelectiveRenderingSPPSubsystem* Subsys);
 };

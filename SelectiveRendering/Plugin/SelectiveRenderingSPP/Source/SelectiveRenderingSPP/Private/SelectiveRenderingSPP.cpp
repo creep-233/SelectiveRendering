@@ -1,19 +1,25 @@
-#include "SelectiveRenderingSPP.h"
+#include "SelectiveRenderingSPP.h"              // 必须第一个
 #include "Interfaces/IPluginManager.h"
 #include "Misc/Paths.h"
-
-// UE5.5 下仍可包含 ShaderCore.h（头文件），但 Build.cs 里不要引用 ShaderCore 模块；RenderCore 足够
 #include "ShaderCore.h"
+#include "Modules/ModuleManager.h"
+
+// 如果你的目录叫“Shader”（不是 Shaders），就用 "Shader"
+static FString GetShaderDir()
+{
+    const TSharedPtr<IPlugin> Plugin = IPluginManager::Get().FindPlugin(TEXT("SelectiveRenderingSPP"));
+    return FPaths::Combine(Plugin->GetBaseDir(), TEXT("Shader")); // ← 按你的实际文件夹名改
+}
 
 void FSelectiveRenderingSPPModule::StartupModule()
 {
-    const FString BaseDir = IPluginManager::Get().FindPlugin(TEXT("SelectiveRenderingSPP"))->GetBaseDir();
-    const FString ShaderDir = FPaths::Combine(BaseDir, TEXT("Shaders")); // 目录名必须是 Shaders
-
-    // 把虚拟路径 /SelectiveRenderingSPP 映射到磁盘
+    const FString ShaderDir = GetShaderDir();
     AddShaderSourceDirectoryMapping(TEXT("/SelectiveRenderingSPP"), ShaderDir);
 }
 
-void FSelectiveRenderingSPPModule::ShutdownModule() {}
+void FSelectiveRenderingSPPModule::ShutdownModule()
+{
+    // 一般不需要清理映射
+}
 
 IMPLEMENT_MODULE(FSelectiveRenderingSPPModule, SelectiveRenderingSPP)

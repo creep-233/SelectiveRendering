@@ -1,0 +1,38 @@
+// /SelectiveRenderingSPP/SRComposite.usf
+
+RWTexture2D<float4> OutTex;
+
+Texture2D LowTex;
+SamplerState LowTexSampler;
+Texture2D HighTex;
+SamplerState HighTexSampler;
+
+// ★ 新增：显著性图
+Texture2D SalTex;
+SamplerState SalTexSampler;
+
+cbuffer Params
+{
+    float2 OutputSize;
+    float Threshold; // 用于 Saliency 的阈值
+    float Boost; // 输出增益（保持你旧逻辑）
+};
+
+[numthreads(8, 8, 1)]
+void MainCS(uint3 DTid : SV_DispatchThreadID)
+{
+    if (DTid.x >= OutputSize.x || DTid.y >= OutputSize.y)
+        return;
+
+    float2 uv = (DTid.xy + 0.5) / OutputSize;
+
+    float3 lo = LowTex.SampleLevel(LowTexSampler, uv, 0).rgb;
+    float3 hi = HighTex.SampleLevel(HighTexSampler, uv, 0).rgb;
+
+    // ★ 新增：读取显著性并根据阈值得到权重
+    float sal = SalTex.SampleLevel(SalTexSampler, uv, 0).r; // 建议 SalTex 资源 sRGB 关闭
+    float w = saturate((sal - Threshold) * 10.0); // 10.0 是斜率，可按需调整
+
+    float3 c = lerp(lo, hi, w) * Boost; // 仍然用 Boost 做强度增益
+    OutTex[DTid.xy] = float4(c, 1);
+}

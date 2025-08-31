@@ -1,7 +1,6 @@
 #pragma once
 #include "CoreMinimal.h"
 #include "Subsystems/GameInstanceSubsystem.h"
-#include "Engine/TextureRenderTarget2D.h"
 #include "SelectiveRenderingSPPSubsystem.generated.h"
 
 UCLASS()
@@ -9,20 +8,27 @@ class SELECTIVERENDERINGSPP_API USelectiveRenderingSPPSubsystem : public UGameIn
 {
     GENERATED_BODY()
 public:
-    UFUNCTION(BlueprintCallable) void SetEnabled(bool bInEnabled);
-    UFUNCTION(BlueprintCallable) void SetMaskRT(UTextureRenderTarget2D* InMaskRT);
-    UFUNCTION(BlueprintCallable) void SetLowRT(UTextureRenderTarget2D* InLowRT);
-    UFUNCTION(BlueprintCallable) void SetHighRT(UTextureRenderTarget2D* InHighRT);
-    UFUNCTION(BlueprintCallable) void PushToRHI();
+    UFUNCTION(BlueprintCallable, Category = "SelectiveRenderingSPP")
+    void SRSPP_SetTargets(class UTextureRenderTarget2D* Out, UTextureRenderTarget2D* Low, UTextureRenderTarget2D* High, UTextureRenderTarget2D* Mask);
 
-    bool IsEnabled() const { return bEnabled; }
-    UTextureRenderTarget2D* GetMaskRT() const { return MaskRT; }
-    UTextureRenderTarget2D* GetLowRT()  const { return LowRT; }
-    UTextureRenderTarget2D* GetHighRT() const { return HighRT; }
+    UFUNCTION(BlueprintCallable, Category = "SelectiveRenderingSPP")
+    void SRSPP_SetParams(float InThreshold, float InBoost);
+
+    // 每帧调用（或需要时调用）
+    UFUNCTION(BlueprintCallable, Category = "SelectiveRenderingSPP")
+    void SRSPP_CompositeNow();
+
+    // 供渲染桥接访问
+    FORCEINLINE class UTextureRenderTarget2D* GetOutRT()  const { return OutRT.Get(); }
+    FORCEINLINE class UTextureRenderTarget2D* GetLowRT()  const { return LowRT.Get(); }
+    FORCEINLINE class UTextureRenderTarget2D* GetHighRT() const { return HighRT.Get(); }
+    FORCEINLINE class UTextureRenderTarget2D* GetMaskRT() const { return MaskRT.Get(); }
+    FORCEINLINE bool IsEnabled() const { return OutRT.IsValid() && LowRT.IsValid() && HighRT.IsValid() && MaskRT.IsValid(); }
+    FORCEINLINE float GetThreshold() const { return Threshold; }
+    FORCEINLINE float GetBoost() const { return Boost; }
 
 private:
-    UPROPERTY() TObjectPtr<UTextureRenderTarget2D> MaskRT = nullptr;
-    UPROPERTY() TObjectPtr<UTextureRenderTarget2D> LowRT = nullptr;
-    UPROPERTY() TObjectPtr<UTextureRenderTarget2D> HighRT = nullptr;
-    bool bEnabled = false;
+    TWeakObjectPtr<class UTextureRenderTarget2D> OutRT, LowRT, HighRT, MaskRT;
+    float Threshold = 0.5f;
+    float Boost = 0.0f;
 };

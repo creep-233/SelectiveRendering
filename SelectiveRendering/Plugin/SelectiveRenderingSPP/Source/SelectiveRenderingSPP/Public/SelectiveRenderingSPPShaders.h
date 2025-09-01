@@ -1,17 +1,13 @@
-// Private/SelectiveRenderingSPPShaders.h
+Ôªø// Plugins/SelectiveRenderingSPP/Source/SelectiveRenderingSPP/Public/SelectiveRenderingSPPShaders.h
 #pragma once
 
 #include "CoreMinimal.h"
 #include "GlobalShader.h"
 #include "ShaderParameterStruct.h"
+#include "RenderGraphResources.h"   // RDG ÂèÇÊï∞/ËµÑÊ∫ê
+#include "RHICommandList.h"
+#include "RHIResources.h"
 
-// ’‚–©¿‡–Õ”√”⁄ Pass/Ω”ø⁄…˘√˜£¨–Ë“™‘⁄Õ∑¿Ôø…º˚
-#include "RenderGraphBuilder.h"
-#include "RenderGraphResources.h"
-#include "RHIResources.h" // FTextureRHIRef
-#include "RHICommandList.h" // FRHICommandListImmediate
-
-// ====== º∆À„◊≈…´∆˜¿‡–Õ…˘√˜£®÷ª…˘√˜£¨≤ª µœ÷£©======
 class FSelectiveCompositeCS : public FGlobalShader
 {
 public:
@@ -23,34 +19,20 @@ public:
         SHADER_PARAMETER(float, Threshold)
         SHADER_PARAMETER(float, Boost)
 
+        //  ÂÖ®ÈÉ®ÊîπÊàê RDG Áâà
+        SHADER_PARAMETER_RDG_TEXTURE(Texture2D, LowTex)
+        SHADER_PARAMETER_RDG_TEXTURE(Texture2D, HighTex)
+        SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SalTex)
+
         SHADER_PARAMETER_SAMPLER(SamplerState, LowTexSampler)
         SHADER_PARAMETER_SAMPLER(SamplerState, HighTexSampler)
         SHADER_PARAMETER_SAMPLER(SamplerState, SalTexSampler)
 
-        SHADER_PARAMETER_RDG_TEXTURE(Texture2D, LowTex)
-        SHADER_PARAMETER_RDG_TEXTURE(Texture2D, HighTex)
-        SHADER_PARAMETER_RDG_TEXTURE(Texture2D, SalTex)
-        SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D<float4>, OutTex)
+        SHADER_PARAMETER_RDG_TEXTURE_UAV(RWTexture2D, OutTex) //  RDG UAV
     END_SHADER_PARAMETER_STRUCT()
 
+    using FPermutationDomain = FShaderPermutationNone; // UE5.5 Áî®Ëøô‰∏™Á±ªÂûãÂêç
+
     static bool ShouldCompilePermutation(const FGlobalShaderPermutationParameters&) { return true; }
+    static void ModifyCompilationEnvironment(const FGlobalShaderPermutationParameters&, FShaderCompilerEnvironment&) {}
 };
-
-// ====== ∂‘Õ‚∫Ø ˝…˘√˜£® µœ÷∑≈ .cpp£©======
-void AddSelectiveCompositePass(
-    FRDGBuilder& GraphBuilder,
-    FRDGTextureRef    OutTex,
-    FRDGTextureRef    LowTex,
-    FRDGTextureRef    HighTex,
-    FRDGTextureRef    SalTex,
-    float             Threshold,
-    float             Boost);
-
-void EnqueueSelectiveComposite(
-    FRHICommandListImmediate& RHICmdList,
-    const FTextureRHIRef& OutRHI,
-    const FTextureRHIRef& LowRHI,
-    const FTextureRHIRef& HighRHI,
-    const FTextureRHIRef& SalRHI,
-    float                     Threshold,
-    float                     Boost);

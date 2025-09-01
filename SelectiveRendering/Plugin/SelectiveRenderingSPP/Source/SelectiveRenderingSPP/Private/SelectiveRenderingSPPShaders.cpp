@@ -1,20 +1,30 @@
-// Private/SelectiveRenderingSPPShaders.cpp
-#include "SelectiveRenderingSPPShaders.h"   // ¡ï ±ØĞëµÚÒ»ĞĞ£¨Èô Build.cs Ö¸¶¨ÁË PrivatePCHHeaderFile£©
+ï»¿// Plugins/SelectiveRenderingSPP/Source/SelectiveRenderingSPP/Private/SelectiveRenderingSPPShaders.cpp
+#include "SelectiveRenderingSPPShaders.h"
 #include "RenderGraphUtils.h"
 #include "RHIStaticStates.h"
 
-// ¡ï Ö»ÄÜ³öÏÖÒ»´Î
 IMPLEMENT_GLOBAL_SHADER(FSelectiveCompositeCS, "/SelectiveRenderingSPP/SRComposite.usf", "MainCS", SF_Compute);
 
-// °ÑÍâ²¿ RHI ÎÆÀí×¢²á³É RDG ÎÆÀí
+// æŠŠå¤–éƒ¨ RHI çº¹ç†æ³¨å†Œæˆ RDG çº¹ç†
 static FRDGTextureRef RegisterExtTex(FRDGBuilder& GraphBuilder, const FTextureRHIRef& In, const TCHAR* Name)
 {
     check(In.IsValid());
     return GraphBuilder.RegisterExternalTexture(CreateRenderTarget(In, Name));
 }
 
-// ÕæÕıµÄ RDG Pass
-void AddSelectiveCompositePass(
+static bool EnsureCompositeCSReady()
+{
+    TShaderMapRef<FSelectiveCompositeCS> CS(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+    if (!CS.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("[SPP] FSelectiveCompositeCS NOT in GlobalShaderMap. Check mapping and SRComposite.usf path."));
+        return false;
+    }
+    return true;
+}
+
+// RDG Pass
+static void AddSelectiveCompositePass(
     FRDGBuilder& GraphBuilder,
     FRDGTextureRef OutTex,
     FRDGTextureRef LowTex,
@@ -28,6 +38,7 @@ void AddSelectiveCompositePass(
     Params->Threshold = Threshold;
     Params->Boost = Boost;
 
+    //  RDG UAV/Texture çš„æ­£ç¡®èµ‹å€¼æ–¹å¼
     Params->OutTex = GraphBuilder.CreateUAV(FRDGTextureUAVDesc(OutTex));
     Params->LowTex = LowTex;
     Params->HighTex = HighTex;
@@ -48,21 +59,21 @@ void AddSelectiveCompositePass(
     FComputeShaderUtils::AddPass(
         GraphBuilder,
         RDG_EVENT_NAME("SelectiveComposite"),
-        CS,
-        Params,
-        GroupCount);
+        CS, Params, GroupCount);
 }
 
-// äÖÈ¾Ïß³ÌÈë¿Ú£¨¸ø Bridge µ÷£©
 void EnqueueSelectiveComposite(
     FRHICommandListImmediate& RHICmdList,
     const FTextureRHIRef& OutRHI,
     const FTextureRHIRef& LowRHI,
     const FTextureRHIRef& HighRHI,
     const FTextureRHIRef& SalRHI,
-    float                     Threshold,
-    float                     Boost)
+    float Threshold,
+    float Boost)
 {
+    if (!EnsureCompositeCSReady())
+        return;
+
     FRDGBuilder GraphBuilder(RHICmdList);
 
     FRDGTextureRef OutTex = RegisterExtTex(GraphBuilder, OutRHI, TEXT("SRP_Out"));

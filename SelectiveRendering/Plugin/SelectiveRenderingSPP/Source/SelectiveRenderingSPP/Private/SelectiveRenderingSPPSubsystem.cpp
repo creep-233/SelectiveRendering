@@ -1,11 +1,15 @@
-// ① 先包含与 .cpp 同名的头（解决：Expected SelectiveRenderingSPPSubsystem.h to be first header included）
 #include "SelectiveRenderingSPPSubsystem.h"
-
-// ② 再包含模块 PCH（有些配置要求这个放第一；这种顺序在 5.3/5.5 都能过）
-#include "SelectiveRenderingSPP.h"
-
-#include "SelectiveRenderingSPPBridge.h"    // 声明 FSelectiveBridgeSPP::PushFromGameThread
+#include "SelectiveRenderingSPP.h"              // LogSPP
+#include "SelectiveRenderingSPPBridge.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "RHI.h"
+#include "RenderCore.h"
+
+void USelectiveRenderingSPPSubsystem::RebuildRTResource(UTextureRenderTarget2D* RT)
+{
+    if (!RT) return;
+    RT->UpdateResourceImmediate(false);
+}
 
 void USelectiveRenderingSPPSubsystem::SRSPP_SetTargets(
     UTextureRenderTarget2D* Out,
@@ -13,10 +17,19 @@ void USelectiveRenderingSPPSubsystem::SRSPP_SetTargets(
     UTextureRenderTarget2D* High,
     UTextureRenderTarget2D* Mask)
 {
-    OutRT = Out;
-    LowRT = Low;
-    HighRT = High;
-    MaskRT = Mask;
+    OutRT = Out; LowRT = Low; HighRT = High; MaskRT = Mask;
+
+    RebuildRTResource(Out);
+    RebuildRTResource(Low);
+    RebuildRTResource(High);
+    RebuildRTResource(Mask);
+    FlushRenderingCommands();
+
+    UE_LOG(LogSPP, Log, TEXT("[SPP] SetTargets Out=%s Low=%s High=%s Mask=%s"),
+        Out ? *Out->GetName() : TEXT("None"),
+        Low ? *Low->GetName() : TEXT("None"),
+        High ? *High->GetName() : TEXT("None"),
+        Mask ? *Mask->GetName() : TEXT("None"));
 }
 
 void USelectiveRenderingSPPSubsystem::SRSPP_SetParams(float InThreshold, float InBoost)
@@ -27,8 +40,17 @@ void USelectiveRenderingSPPSubsystem::SRSPP_SetParams(float InThreshold, float I
 
 void USelectiveRenderingSPPSubsystem::SRSPP_CompositeNow()
 {
-    if (!IsEnabled()) return;
+    if (!IsEnabled())
+    {
+        UE_LOG(LogSPP, Warning, TEXT("[SPP] CompositeNow called but targets not set."));
+        return;
+    }
 
-    // 把工作丢到渲染线程（Bridge 会抓取 4 个 RT + 参数，然后调用 Compute Shader）
+    RebuildRTResource(OutRT.Get());
+    RebuildRTResource(LowRT.Get());
+    RebuildRTResource(HighRT.Get());
+    RebuildRTResource(MaskRT.Get());
+    FlushRenderingCommands();
+
     FSelectiveBridgeSPP::PushFromGameThread(this);
 }

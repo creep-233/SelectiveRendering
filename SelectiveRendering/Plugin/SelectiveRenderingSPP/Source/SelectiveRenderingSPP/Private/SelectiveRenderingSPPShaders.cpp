@@ -57,6 +57,17 @@ static void AddSelectiveCompositePass(
     Params->HighTexSampler = TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
     Params->SalTexSampler = TStaticSamplerState<SF_Point, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
 
+    //TShaderMapRef<FSelectiveCompositeCS> CS(GetGlobalShaderMap(GMaxRHIFeatureLevel));
+
+    //const FIntPoint  Extent = OutTex->Desc.Extent;
+    //const FIntVector GroupCount(
+    //    FMath::DivideAndRoundUp(Extent.X, 8),
+    //    FMath::DivideAndRoundUp(Extent.Y, 8),
+    //    1);
+
+    //FComputeShaderUtils::AddPass(GraphBuilder, RDG_EVENT_NAME("SelectiveComposite"), CS, Params, GroupCount);
+    
+
     TShaderMapRef<FSelectiveCompositeCS> CS(GetGlobalShaderMap(GMaxRHIFeatureLevel));
 
     const FIntPoint  Extent = OutTex->Desc.Extent;
@@ -65,7 +76,14 @@ static void AddSelectiveCompositePass(
         FMath::DivideAndRoundUp(Extent.Y, 8),
         1);
 
+    // 关键：让未使用的参数从反射里清理掉，避免“未绑定 UBO/未声明参数”误报
+    ClearUnusedGraphResources(CS, Params);
+
+    // 可选日志，方便确认真的在调度
+    UE_LOG(LogTemp, Log, TEXT("[SPP] Dispatch SelectiveComposite %dx%d"), Extent.X, Extent.Y);
+
     FComputeShaderUtils::AddPass(GraphBuilder, RDG_EVENT_NAME("SelectiveComposite"), CS, Params, GroupCount);
+
 }
 
 //void EnqueueSelectiveComposite(
@@ -143,49 +161,58 @@ void EnqueueSelectiveComposite(
     float Threshold,
     float Boost)
 {
-    // 0) 全面防御：任何一个纹理没就绪，直接返回
+    // 0) 基本有效性
     if (!OutRHI.IsValid() || !LowRHI.IsValid() || !HighRHI.IsValid() || !SalRHI.IsValid())
     {
-        UE_LOG(LogSPP, Warning, TEXT("[SPP] Skip: some RHI invalid."));
+        UE_LOG(LogTemp, Warning, TEXT("[SPP] Skip: some RHI invalid."));
         return;
     }
 
-    // 1) 只要输出格式不是 RGBA16f，或者没 UAV 标志，直接返回（避免 RDG 里触发断言）
-    const FRHITextureDesc& OutD = OutRHI->GetDesc();
-    const bool bOutUAV = !!(OutD.Flags & TexCreate_UAV);
-    const bool bFmtOK = (OutD.Format == PF_FloatRGBA);
-    if (!bOutUAV || !bFmtOK)
+    // 1) ★ 防读写同图（把 Out 当作输入会在 Dispatch 时崩）
+    auto Same = [](const FTextureRHIRef& A, const FTextureRHIRef& B) { return A.IsValid() && (A == B); };
+    if (Same(OutRHI, LowRHI) || Same(OutRHI, HighRHI) || Same(OutRHI, SalRHI))
     {
-        UE_LOG(LogSPP, Warning, TEXT("[SPP] Skip composite: OutRHI not ready. Fmt=%d (need PF_FloatRGBA=%d), Flags=0x%x (need UAV)"),
-            (int32)OutD.Format, (int32)PF_FloatRGBA, (uint32)OutD.Flags);
+        UE_LOG(LogTemp, Error, TEXT("[SPP] OutRHI must NOT equal any input (Low/High/Sal)."));
+        return;
+    }
+
+    // 2) OutRHI 只检查格式（我们用中间 RDG + Copy，外部不要求 UAV）
+    const FRHITextureDesc& OutD = OutRHI->GetDesc();
+    if (OutD.Format != PF_FloatRGBA)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[SPP] Skip: OutRHI format=%d (needs PF_FloatRGBA=%d for CopyTexture)."),
+            (int32)OutD.Format, (int32)PF_FloatRGBA);
         return;
     }
 
     if (!EnsureCompositeCSReady())
         return;
 
-    // ========= 下面是你原先的 RDG 路径 =========
+    // ========= RDG 路径 =========
     FRDGBuilder GraphBuilder(RHICmdList);
 
+    // 输入注册（SRV）
     FRDGTextureRef LowTex = RegisterExtTex(GraphBuilder, LowRHI, TEXT("SRP_Low"));
     FRDGTextureRef HighTex = RegisterExtTex(GraphBuilder, HighRHI, TEXT("SRP_High"));
     FRDGTextureRef SalTex = RegisterExtTex(GraphBuilder, SalRHI, TEXT("SRP_Sal"));
 
     const FIntPoint Extent = OutD.Extent;
 
-    // 用中间 UAV 纹理做计算（确保 UAV）
+    // 中间可写纹理（UAV）
     FRDGTextureDesc OutDesc = FRDGTextureDesc::Create2D(
         Extent, PF_FloatRGBA, FClearValueBinding::None,
         TexCreate_ShaderResource | TexCreate_UAV);
     FRDGTextureRef OutRDG = GraphBuilder.CreateTexture(OutDesc, TEXT("SRP_Out_RDG"));
 
+    // 合成（会在 AddSelectiveCompositePass 内做 ClearUnusedGraphResources + 日志）
     AddSelectiveCompositePass(GraphBuilder, OutRDG, LowTex, HighTex, SalTex, Threshold, Boost);
 
-    // 只有当外部 OutRHI 与 OutRDG 格式一致时才做拷贝（现在我们已经在上面强制检查过是 PF_FloatRGBA）
+    // 拷回外部（同格式）
     FRDGTextureRef OutExternal = RegisterExtTex(GraphBuilder, OutRHI, TEXT("SRP_OutExternal"));
     AddCopyTexturePass(GraphBuilder, OutRDG, OutExternal);
 
     GraphBuilder.Execute();
 }
+
 
 

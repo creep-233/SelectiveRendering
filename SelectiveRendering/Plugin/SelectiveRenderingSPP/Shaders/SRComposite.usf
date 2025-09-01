@@ -170,8 +170,7 @@
 //}
 
 
-// Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
-#include "/Engine/Public/Platform.ush"     // ★ 必须
+#include "/Engine/Public/Platform.ush"
 
 RWTexture2D<float4> OutTex;
 
@@ -183,25 +182,27 @@ SamplerState LowTexSampler;
 SamplerState HighTexSampler;
 SamplerState SalTexSampler;
 
-cbuffer Parameters
+// 名字要与 UE 的参数结构匹配：FParameters（不是 Parameters）
+cbuffer FParameters
 {
     float2 OutputSize;
     float Threshold;
     float Boost;
 };
 
+
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
-    if (DTid.x >= (uint)OutputSize.x || DTid.y >= (uint)OutputSize.y) return;
+    if (DTid.x >= (uint) OutputSize.x || DTid.y >= (uint) OutputSize.y)
+        return;
 
     float2 uv = (DTid.xy + 0.5) / OutputSize;
-    float4 low  = LowTex.Sample(LowTexSampler,   uv);
+    float4 low = LowTex.Sample(LowTexSampler, uv);
     float4 high = HighTex.Sample(HighTexSampler, uv);
-    float  sal  = SalTex.Sample(SalTexSampler,   uv).r;
+    float sal = SalTex.Sample(SalTexSampler, uv).r;
 
-    float  w    = (sal >= Threshold) ? Boost : 1.0;
+    float w = (sal >= Threshold) ? Boost : 1.0;
     float4 outc = lerp(low, high, saturate(w * sal));
     OutTex[DTid.xy] = outc;
 }
-

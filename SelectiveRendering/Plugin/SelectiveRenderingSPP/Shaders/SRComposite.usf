@@ -139,40 +139,37 @@
 
 
 // Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
-#include "/Engine/Public/Platform.ush"
-#include "/Engine/Public/ShaderCommon.ush"
+#include "/Engine/Public/Platform.ush"   // 提供 float4/numthreads 等基础定义
 
+// 资源名要与 C++ FParameters 字段一致
 RWTexture2D<float4> OutTex;
 
-Texture2D<float4> LowTex;
+Texture2D LowTex;
+Texture2D HighTex;
+Texture2D SalTex;
+
 SamplerState LowTexSampler;
-
-Texture2D<float4> HighTex;
 SamplerState HighTexSampler;
-
-Texture2D<float> SalTex; // 如果是灰度图；若也是 RGBA 就用 float4
 SamplerState SalTexSampler;
 
-cbuffer Parameters
-{
-    float2 OutputSize;
-    float Threshold;
-    float Boost;
-};
-
+// UE 会生成一个叫 “Parameters” 的常量缓冲，字段名与 C++ 对齐
+// 直接使用 Parameters.OutputSize / Threshold / Boost
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
-    if (DTid.x >= OutputSize.x || DTid.y >= OutputSize.y)
+    if (DTid.x >= (uint) Parameters.OutputSize.x || DTid.y >= (uint) Parameters.OutputSize.y)
         return;
 
-    float2 uv = (DTid.xy + 0.5) / OutputSize;
-    float4 lo = LowTex.SampleLevel(LowTexSampler, uv, 0);
-    float4 hi = HighTex.SampleLevel(HighTexSampler, uv, 0);
-    float s = SalTex.SampleLevel(SalTexSampler, uv, 0);
-    float w = (s > Threshold) ? Boost : 0.0;
+    float2 uv = (DTid.xy + 0.5) / Parameters.OutputSize;
 
-    OutTex[DTid.xy] = lerp(lo, hi, saturate(w));
+    float4 low = LowTex.Sample(LowTexSampler, uv);
+    float4 high = HighTex.Sample(HighTexSampler, uv);
+    float sal = SalTex.Sample(SalTexSampler, uv).r;
+
+    float w = (sal >= Parameters.Threshold) ? Parameters.Boost : 1.0;
+    float4 outc = lerp(low, high, saturate(w * sal));
+
+    OutTex[DTid.xy] = outc;
 }
 
 

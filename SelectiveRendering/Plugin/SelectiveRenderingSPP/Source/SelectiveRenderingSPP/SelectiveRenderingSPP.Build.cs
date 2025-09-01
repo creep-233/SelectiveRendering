@@ -20,6 +20,42 @@
 //    }
 //}
 
+//// Plugins/SelectiveRenderingSPP/Source/SelectiveRenderingSPP/SelectiveRenderingSPP.Build.cs
+//using UnrealBuildTool;
+//using System.IO;
+
+//public class SelectiveRenderingSPP : ModuleRules
+//{
+//    public SelectiveRenderingSPP(ReadOnlyTargetRules Target) : base(Target)
+//    {
+//        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
+//        IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;
+
+//        // 公共依赖
+//        PublicDependencyModuleNames.AddRange(new[] {
+//            "Core", "CoreUObject", "Engine",
+//            "RHI", "RenderCore", "Projects"
+//        });
+
+//        // 私有依赖：用到了 RDG/RenderGraphUtils，带上 Renderer 更保险
+//        PrivateDependencyModuleNames.AddRange(new[] {
+//            "Renderer"
+//            // 如果你没有 Slate UI，就不要加 "Slate","SlateCore"
+//        });
+
+//        // 让 UE 能找到 /SelectiveRenderingSPP/SRComposite.usf
+//        string pluginDir = Path.GetFullPath(Path.Combine(ModuleDirectory, "..", ".."));
+//        string shaderDir = Path.Combine(pluginDir, "Shaders");
+//        if (Directory.Exists(shaderDir))
+//        {
+//            AdditionalShaderDirectories.Add(shaderDir);
+//        }
+//    }
+//}
+
+
+
+// Plugins/SelectiveRenderingSPP/Source/SelectiveRenderingSPP/SelectiveRenderingSPP.Build.cs
 using UnrealBuildTool;
 
 public class SelectiveRenderingSPP : ModuleRules
@@ -29,20 +65,16 @@ public class SelectiveRenderingSPP : ModuleRules
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
         IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;
 
-        PublicDependencyModuleNames.AddRange(new[]
-        {
+        PublicDependencyModuleNames.AddRange(new[] {
             "Core", "CoreUObject", "Engine",
-            "RHI", "RenderCore", "Projects"
+            "RHI", "RenderCore"
         });
 
-        // 用了 RDG / RenderGraphUtils 必须加 Renderer
-        PrivateDependencyModuleNames.AddRange(new[]
-        {
-            "Renderer", "Slate", "SlateCore"
+        // 用了 RDG/RenderGraphUtils 要 "Renderer"；要用 IPluginManager 则必须 "Projects"
+        PrivateDependencyModuleNames.AddRange(new[] {
+            "Renderer", "Projects"
         });
-
-        // 先不要配置 PrivatePCHHeaderFile，避免再次“全项目爆红”
-        // PrivatePCHHeaderFile = "...";  // 先别用
-        // bUseUnity = true;              // 保持默认
     }
 }
+
+

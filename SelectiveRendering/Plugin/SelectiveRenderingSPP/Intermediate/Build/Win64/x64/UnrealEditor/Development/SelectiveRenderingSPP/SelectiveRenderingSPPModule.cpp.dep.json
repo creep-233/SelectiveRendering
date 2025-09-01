@@ -1,0 +1,13 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\source\\selectiverenderingspp\\private\\selectiverenderingsppmodule.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\intermediate\\build\\win64\\x64\\selectiverenderingeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
+        "Includes": [
+            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\selectiverenderingspp\\definitions.selectiverenderingspp.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

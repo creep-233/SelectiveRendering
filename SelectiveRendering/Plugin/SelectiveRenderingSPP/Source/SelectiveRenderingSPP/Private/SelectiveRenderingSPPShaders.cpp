@@ -82,6 +82,7 @@ static void AddSelectiveCompositePass(
     // 可选日志，方便确认真的在调度
     UE_LOG(LogTemp, Log, TEXT("[SPP] Dispatch SelectiveComposite %dx%d"), Extent.X, Extent.Y);
 
+
     FComputeShaderUtils::AddPass(GraphBuilder, RDG_EVENT_NAME("SelectiveComposite"), CS, Params, GroupCount);
 
 }

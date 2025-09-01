@@ -138,10 +138,41 @@
 //}
 
 
-// Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
-#include "/Engine/Public/Platform.ush"   // 提供 float4/numthreads 等基础定义
+//// Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
 
-// 资源名要与 C++ FParameters 字段一致
+
+//RWTexture2D<float4> OutTex;
+
+//Texture2D LowTex;
+//Texture2D HighTex;
+//Texture2D SalTex;
+
+//SamplerState LowTexSampler;
+//SamplerState HighTexSampler;
+//SamplerState SalTexSampler;
+
+//[numthreads(8, 8, 1)]
+//void MainCS(uint3 DTid : SV_DispatchThreadID)
+//{
+//    if (DTid.x >= (uint) Parameters.OutputSize.x || DTid.y >= (uint) Parameters.OutputSize.y)
+//        return;
+
+//    float2 uv = (DTid.xy + 0.5) / Parameters.OutputSize;
+
+//    float4 low = LowTex.Sample(LowTexSampler, uv);
+//    float4 high = HighTex.Sample(HighTexSampler, uv);
+//    float sal = SalTex.Sample(SalTexSampler, uv).r;
+
+//    float w = (sal >= Parameters.Threshold) ? Parameters.Boost : 1.0;
+//    float4 outc = lerp(low, high, saturate(w * sal));
+
+//    OutTex[DTid.xy] = outc;
+//}
+
+
+// Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
+#include "/Engine/Public/Platform.ush"     // ★ 必须
+
 RWTexture2D<float4> OutTex;
 
 Texture2D LowTex;
@@ -152,24 +183,25 @@ SamplerState LowTexSampler;
 SamplerState HighTexSampler;
 SamplerState SalTexSampler;
 
-// UE 会生成一个叫 “Parameters” 的常量缓冲，字段名与 C++ 对齐
-// 直接使用 Parameters.OutputSize / Threshold / Boost
+cbuffer Parameters
+{
+    float2 OutputSize;
+    float Threshold;
+    float Boost;
+};
+
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
-    if (DTid.x >= (uint) Parameters.OutputSize.x || DTid.y >= (uint) Parameters.OutputSize.y)
-        return;
+    if (DTid.x >= (uint)OutputSize.x || DTid.y >= (uint)OutputSize.y) return;
 
-    float2 uv = (DTid.xy + 0.5) / Parameters.OutputSize;
-
-    float4 low = LowTex.Sample(LowTexSampler, uv);
+    float2 uv = (DTid.xy + 0.5) / OutputSize;
+    float4 low  = LowTex.Sample(LowTexSampler,   uv);
     float4 high = HighTex.Sample(HighTexSampler, uv);
-    float sal = SalTex.Sample(SalTexSampler, uv).r;
+    float  sal  = SalTex.Sample(SalTexSampler,   uv).r;
 
-    float w = (sal >= Parameters.Threshold) ? Parameters.Boost : 1.0;
+    float  w    = (sal >= Threshold) ? Boost : 1.0;
     float4 outc = lerp(low, high, saturate(w * sal));
-
     OutTex[DTid.xy] = outc;
 }
-
 

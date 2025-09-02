@@ -1,11 +1,12 @@
-﻿#include "SelectiveRenderingSPPShaders.h"
+﻿// SelectiveRenderingSPPShaders.cpp
+#include "CoreMinimal.h"                   // 确保有 ensure/UE_LOG
+#include "SelectiveRenderingSPPShaders.h"
 #include "GlobalShader.h"
 #include "RHI.h"
 #include "RHIResources.h"
-#include "RHICommandList.h"          // ← 必须：FRHICommandListImmediate / CreateUnorderedAccessView(…)
-#include "PipelineStateCache.h"      // SetComputePipelineState
+#include "RHICommandList.h"
+#include "PipelineStateCache.h"
 #include "Runtime/Launch/Resources/Version.h"
-
 
 IMPLEMENT_GLOBAL_SHADER(FSelectiveCompositeCS,
     "/Plugin/SelectiveRenderingSPP/SRComposite.usf", "MainCS", SF_Compute);
@@ -23,8 +24,7 @@ void EnqueueSelectiveComposite(
     if (!OutRHI.IsValid() || !LowRHI.IsValid() || !HighRHI.IsValid() || !SalRHI.IsValid())
         return;
 
-    // 防止读写同图
-    auto Same = [](const FTextureRHIRef& A, const FTextureRHIRef& B) { return A.IsValid() && (A == B); };
+    auto Same = [](const FTextureRHIRef& A, const FTextureRHIRef& B) { return A.IsValid() && A == B; };
     if (Same(OutRHI, LowRHI) || Same(OutRHI, HighRHI) || Same(OutRHI, SalRHI))
         return;
 
@@ -33,7 +33,7 @@ void EnqueueSelectiveComposite(
 
     const FIntPoint Extent = OutRHI->GetDesc().Extent;
 
-    // 1) 状态转换
+    // 1) 状态转换：输入→SRV，输出→UAV
     RHICmdList.Transition({
         FRHITransitionInfo(LowRHI ,  ERHIAccess::Unknown, ERHIAccess::SRVMask),
         FRHITransitionInfo(HighRHI,  ERHIAccess::Unknown, ERHIAccess::SRVMask),
@@ -41,54 +41,41 @@ void EnqueueSelectiveComposite(
         FRHITransitionInfo(OutRHI ,  ERHIAccess::Unknown, ERHIAccess::UAVCompute)
         });
 
-    // 2) 创建 UAV（注意 UE 版本差异）
-    // 
-    //FUnorderedAccessViewRHIRef OutUAV;                  // ← 只在这里声明一次
-    //FRHITexture* TextureRHI = OutRHI.GetReference();
-
-    //auto UAVDesc = FRHIViewDesc::CreateTextureUAV()
-    //    .SetDimensionFromTexture(TextureRHI)  // 与 OutRHI 维度一致
-    //    .SetMipLevel(0);                      // 写入 mip 0
-
-    //OutUAV = RHICmdList.CreateUnorderedAccessView(TextureRHI, UAVDesc); // ← 赋值，不要再写类型
-
-
-
-    //FRHIViewDesc::FTextureUAV::FInitializer UAVDesc =
-    //    FRHIViewDesc::CreateTextureUAV()
-    //    .SetDimensionFromTexture(TextureRHI)   // 维度跟 OutRHI 一致
-    //    .SetMipLevel(0);                       // 要写的 mip，一般是 0
-
-    //OutUAV = RHICmdList.CreateUnorderedAccessView(TextureRHI, UAVDesc);
-
-    FUnorderedAccessViewRHIRef OutUAV;
+    // 2) 创建 UAV
     FRHITexture* TextureRHI = OutRHI.GetReference();
+    const FRHITextureDesc& OutDesc = TextureRHI->GetDesc();
+    if (!EnumHasAnyFlags(OutDesc.Flags, TexCreate_UAV))
+    {
+        UE_LOG(LogTemp, Error, TEXT("[SelectiveSPP] OutRHI missing TexCreate_UAV flag!"));
+        return;
+    }
 
     FRHIViewDesc::FTextureUAV::FInitializer UAVDesc =
         FRHIViewDesc::CreateTextureUAV()
-        .SetDimensionFromTexture(TextureRHI)   // 跟 OutRHI 维度一致
-        .SetMipLevel(0);                       // 写 mip 0
+        .SetDimensionFromTexture(TextureRHI)
+        .SetMipLevel(0);
 
-    OutUAV = RHICmdList.CreateUnorderedAccessView(TextureRHI, UAVDesc);
-
-
-
+    FUnorderedAccessViewRHIRef OutUAV = RHICmdList.CreateUnorderedAccessView(TextureRHI, UAVDesc);
+    if (!OutUAV.IsValid())
+    {
+        UE_LOG(LogTemp, Error, TEXT("[SelectiveSPP] CreateUnorderedAccessView failed."));
+        return;
+    }
 
     // 3) 绑定 PSO
     FRHIComputeShader* ShaderRHI = CS.GetComputeShader();
     SetComputePipelineState(RHICmdList, ShaderRHI);
 
-    // 4) 设置所有参数（批量接口）
-    //CS->SetParameters(RHICmdList, ShaderRHI, Extent, Threshold, Boost, LowRHI, HighRHI, SalRHI, OutUAV.GetReference());
-    // 采样器
+    // —— 只调用公开的调试接口；不要直接访问 private 成员 ——
+    CS->DebugLogBindings();
+    CS->DebugEnsureBindings();
+
+    // 4) batched 设置所有参数并一次性提交
     FRHISamplerState* LowS = TStaticSamplerState<SF_Trilinear, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
     FRHISamplerState* HighS = LowS;
     FRHISamplerState* SalS = TStaticSamplerState<SF_Point, AM_Clamp, AM_Clamp, AM_Clamp>::GetRHI();
 
-    // 取 batched（注意是“引用”）
     FRHIBatchedShaderParameters& Batched = RHICmdList.GetScratchShaderParameters();
-
-    // 调你的 batched 版本 SetParameters（传裸指针，不要传 TRef）
     CS->SetParameters(
         Batched,
         Extent, Threshold, Boost,
@@ -97,20 +84,14 @@ void EnqueueSelectiveComposite(
         SalRHI.GetReference(), SalS,
         OutUAV.GetReference()
     );
-
-    // 一次性提交 batched
     RHICmdList.SetBatchedShaderParameters(ShaderRHI, Batched);
 
-
-
-    // 5) 调度
+    // 5) Dispatch
     const uint32 GX = FMath::DivideAndRoundUp((uint32)Extent.X, 8u);
     const uint32 GY = FMath::DivideAndRoundUp((uint32)Extent.Y, 8u);
     RHICmdList.DispatchComputeShader(GX, GY, 1);
 
-    // 6) 解绑 UAV，避免后续 PASS 报占用
-    //CS->UnbindUAV(RHICmdList, ShaderRHI);
-    // 6) Batched 解绑（需要时才做）
+    // 6) batched 解绑（需要时才做）
     if (RHICmdList.NeedsShaderUnbinds())
     {
         FRHIBatchedShaderUnbinds& Unbinds = RHICmdList.GetScratchShaderUnbinds();
@@ -118,7 +99,29 @@ void EnqueueSelectiveComposite(
         RHICmdList.SetBatchedShaderUnbinds(ShaderRHI, Unbinds);
     }
 
-
-    // 7) 若 OutRHI 后面要当 SRV 用，记得转回
+    // 7) 如后续要把 OutRHI 当 SRV 用，转回去
     RHICmdList.Transition({ FRHITransitionInfo(OutRHI, ERHIAccess::UAVCompute, ERHIAccess::SRVMask) });
+}
+
+// ===== 这两个函数的“类外实现”，一定要放在任何函数体之外！ =====
+void FSelectiveCompositeCS::DebugLogBindings() const
+{
+    UE_LOG(LogTemp, Warning,
+        TEXT("[SRComposite] IsBound Low=%d High=%d Sal=%d Out=%d | BaseIndex Low=%d High=%d Sal=%d Out=%d"),
+        LowTexParam.IsBound() ? 1 : 0,
+        HighTexParam.IsBound() ? 1 : 0,
+        SalTexParam.IsBound() ? 1 : 0,
+        OutTexParam.IsBound() ? 1 : 0,
+        LowTexParam.GetBaseIndex(),
+        HighTexParam.GetBaseIndex(),
+        SalTexParam.GetBaseIndex(),
+        OutTexParam.GetBaseIndex());
+}
+
+void FSelectiveCompositeCS::DebugEnsureBindings() const
+{
+    ensureMsgf(LowTexParam.IsBound(), TEXT("LowTex not bound in shader!"));
+    ensureMsgf(HighTexParam.IsBound(), TEXT("HighTex not bound in shader!"));
+    ensureMsgf(SalTexParam.IsBound(), TEXT("SalTex not bound in shader!"));
+    ensureMsgf(OutTexParam.IsBound(), TEXT("OutTex (UAV) not bound in shader!"));
 }

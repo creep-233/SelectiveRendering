@@ -4,6 +4,9 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "RHI.h"
 #include "RenderCore.h"
+#include "PixelFormat.h"
+
+static void SPP_DumpRT(const TCHAR* Tag, class UTextureRenderTarget2D* RT);
 
 void USelectiveRenderingSPPSubsystem::RebuildRTResource(UTextureRenderTarget2D* RT)
 {
@@ -52,5 +55,43 @@ void USelectiveRenderingSPPSubsystem::SRSPP_CompositeNow()
     RebuildRTResource(MaskRT.Get());
     FlushRenderingCommands();
 
+    SPP_DumpRT(TEXT("Out"), OutRT.Get());
+    SPP_DumpRT(TEXT("Low"), LowRT.Get());
+    SPP_DumpRT(TEXT("High"), HighRT.Get());
+    SPP_DumpRT(TEXT("Mask"), MaskRT.Get());
+    FlushRenderingCommands(); 
+
     FSelectiveBridgeSPP::PushFromGameThread(this);
 }
+
+static void SPP_DumpRT(const TCHAR* Tag, UTextureRenderTarget2D* RT)
+{
+    if (!RT)
+    {
+        UE_LOG(LogSPP, Error, TEXT("[%s] RT = null"), Tag);
+        return;
+    }
+
+    FTextureRenderTargetResource* Res = RT->GameThread_GetRenderTargetResource();
+    FTextureRHIRef Tex = Res ? Res->GetTextureRHI() : FTextureRHIRef();
+
+    ENQUEUE_RENDER_COMMAND(SPP_Dump)(
+        [TagStr = FString(Tag), Tex](FRHICommandListImmediate& RHICmdList)
+        {
+            if (!Tex.IsValid())
+            {
+                UE_LOG(LogSPP, Error, TEXT("[%s] RHI Tex invalid"), *TagStr);
+                return;
+            }
+
+            const FRHITextureDesc& D = Tex->GetDesc();
+            UE_LOG(LogSPP, Warning,
+                TEXT("[%s] Extent=%dx%d Format=%s Mips=%u Flags=0x%08x SRV=%d UAV=%d"),
+                *TagStr, D.Extent.X, D.Extent.Y, GPixelFormats[D.Format].Name, D.NumMips,
+                (uint32)D.Flags,
+                EnumHasAnyFlags(D.Flags, TexCreate_ShaderResource) ? 1 : 0,
+                EnumHasAnyFlags(D.Flags, TexCreate_UAV) ? 1 : 0);
+        });
+}
+
+

@@ -1,224 +1,14 @@
-//// /SelectiveRenderingSPP/SRComposite.usf
-
-//RWTexture2D<float4> OutTex;
-
-//Texture2D LowTex;
-//SamplerState LowTexSampler;
-
-//Texture2D HighTex;
-//SamplerState HighTexSampler;
-
-//Texture2D SalTex;
-//SamplerState SalTexSampler;
-
-//cbuffer Params
-//{
-//    float2 OutputSize;
-//    float Threshold;
-//    float Boost;
-//};
-
-////[numthreads(8, 8, 1)]
-////void MainCS(uint3 DTid : SV_DispatchThreadID)
-////{
-////    if (DTid.x >= OutputSize.x || DTid.y >= OutputSize.y)
-////        return;
-
-////    float2 uv = (DTid.xy + 0.5) / OutputSize;
-
-////    float3 lo = LowTex.SampleLevel(LowTexSampler, uv, 0).rgb;
-////    float3 hi = HighTex.SampleLevel(HighTexSampler, uv, 0).rgb;
-
-////    // 用显著图控制混合强度（越亮越偏向 hi）
-////    float sal = SalTex.SampleLevel(SalTexSampler, uv, 0).r;
-////    float w = saturate(sal - Threshold); // 也可用 smoothstep(Threshold, Threshold+0.1, sal);
-
-////    float3 c = lerp(lo, hi, w);
-
-////    // Boost 用来整体提亮或缩放
-////    OutTex[DTid.xy] = float4(c * Boost, 1);
-////}
-
-
-//[numthreads(8, 8, 1)]
-//void maincs(uint3 dtid : sv_dispatchthreadid)
-//{
-//    // 可能会发到对齐后的工作组，因此要做越界保护
-//    if (dtid.x >= outputsize.x || dtid.y >= outputsize.y)
-//        return;
-
-//    // 洋红填充，用来验证 usf 是否在跑
-//    outtex[dtid.xy] = float4(1, 0, 1, 1);
-//}
-
-
-
-
-//// /SelectiveRenderingSPP/SRComposite.usf
-
-//// 打开=1 时强制输出洋红；关=0 时走正式逻辑
-//#define SPP_TEST_MAGENTA 1
-
-//RWTexture2D<float4> OutTex;
-
-//Texture2D LowTex;
-//SamplerState LowTexSampler;
-//Texture2D HighTex;
-//SamplerState HighTexSampler;
-//Texture2D SalTex;
-//SamplerState SalTexSampler;
-
-//cbuffer Parameters     // ← 名字必须叫 Parameters
-//{
-//    float2 OutputSize;
-//    float Threshold;
-//    float Boost;
-//};
-
-//[numthreads(8, 8, 1)]
-//void MainCS(uint3 DTid : SV_DispatchThreadID)
-//{
-//    if (DTid.x >= OutputSize.x || DTid.y >= OutputSize.y)
-//        return;
-
-//#if SPP_TEST_MAGENTA
-//    OutTex[DTid.xy] = float4(1, 0, 1, 1);
-//#else
-//    float2 uv = (DTid.xy + 0.5) / OutputSize;
-
-//    float3 lo  = LowTex .SampleLevel(LowTexSampler , uv, 0).rgb;
-//    float3 hi  = HighTex.SampleLevel(HighTexSampler, uv, 0).rgb;
-//    float  sal = SalTex .SampleLevel(SalTexSampler , uv, 0).r;
-
-//    float  w = saturate(sal - Threshold);
-//    float3 c = lerp(lo, hi, w);
-
-//    OutTex[DTid.xy] = float4(c * Boost, 1);
-//#endif
-//}
-
-
-//// /SelectiveRenderingSPP/SRComposite.usf
-
-//// 调试开关
-//#define SPP_TEST_MAGENTA 1
-
-//RWTexture2D<float4> OutTex;
-
-//Texture2D LowTex;
-//SamplerState LowTexSampler;
-
-//Texture2D HighTex;
-//SamplerState HighTexSampler;
-
-//Texture2D SalTex;
-//SamplerState SalTexSampler;
-
-//float2 OutputSize;
-//float Threshold;
-//float Boost;
-
-//[numthreads(8, 8, 1)]
-//void MainCS(uint3 DTid : SV_DispatchThreadID)
-//{
-//    if (DTid.x >= OutputSize.x || DTid.y >= OutputSize.y)
-//        return;
-
-//#if SPP_TEST_MAGENTA
-//    OutTex[DTid.xy] = float4(1, 0, 1, 1);
-//#else
-//    float2 uv = (DTid.xy + 0.5) / OutputSize;
-//    float3 lo = LowTex.SampleLevel(LowTexSampler, uv, 0).rgb;
-//    float3 hi = HighTex.SampleLevel(HighTexSampler, uv, 0).rgb;
-//    float sal = SalTex.SampleLevel(SalTexSampler, uv, 0).r;
-//    float w = saturate(sal - Threshold);
-//    float3 c = lerp(lo, hi, w);
-//    OutTex[DTid.xy] = float4(c * Boost, 1);
-//#endif
-//}
-
-
-//// Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
-
-
-//RWTexture2D<float4> OutTex;
-
-//Texture2D LowTex;
-//Texture2D HighTex;
-//Texture2D SalTex;
-
-//SamplerState LowTexSampler;
-//SamplerState HighTexSampler;
-//SamplerState SalTexSampler;
-
-//[numthreads(8, 8, 1)]
-//void MainCS(uint3 DTid : SV_DispatchThreadID)
-//{
-//    if (DTid.x >= (uint) Parameters.OutputSize.x || DTid.y >= (uint) Parameters.OutputSize.y)
-//        return;
-
-//    float2 uv = (DTid.xy + 0.5) / Parameters.OutputSize;
-
-//    float4 low = LowTex.Sample(LowTexSampler, uv);
-//    float4 high = HighTex.Sample(HighTexSampler, uv);
-//    float sal = SalTex.Sample(SalTexSampler, uv).r;
-
-//    float w = (sal >= Parameters.Threshold) ? Parameters.Boost : 1.0;
-//    float4 outc = lerp(low, high, saturate(w * sal));
-
-//    OutTex[DTid.xy] = outc;
-//}
-
-
-//#include "/Engine/Public/Platform.ush"   // 必须第1行
-
-//RWTexture2D<float4> OutTex;
-
-//Texture2D LowTex;
-//Texture2D HighTex;
-//Texture2D SalTex;
-
-//SamplerState LowTexSampler;
-//SamplerState HighTexSampler;
-//SamplerState SalTexSampler;
-
-//// 名字要与 C++ 的 FSelectiveCompositeCS::FParameters 完全一致
-//cbuffer FParameters
-//{
-//    float2 OutputSize;
-//    float Threshold;
-//    float Boost;
-//};
-
-//[numthreads(8, 8, 1)]
-//void MainCS(uint3 DTid : SV_DispatchThreadID)
-//{
-//    if (DTid.x >= (uint) OutputSize.x || DTid.y >= (uint) OutputSize.y)
-//        return;
-
-//    float2 uv = (DTid.xy + 0.5) / OutputSize;
-//    float4 low = LowTex.Sample(LowTexSampler, uv);
-//    float4 high = HighTex.Sample(HighTexSampler, uv);
-//    float sal = SalTex.Sample(SalTexSampler, uv).r;
-
-//    float w = (sal >= Threshold) ? Boost : 1.0;
-//    float4 outc = lerp(low, high, saturate(w * sal));
-//    OutTex[DTid.xy] = outc;
-//}
-
-
-//// /Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
 //#include "/Engine/Public/Platform.ush"
 
-//// 手写常量缓冲，名字要与 C++ 绑定一致
-//cbuffer SPPParams
+
+//cbuffer CompositeCB
 //{
-//    float2 OutputSize; // 像素尺寸
-//    float Threshold; // 阈值
-//    float Boost; // 增益
+//    float2 OutputSize;
+//    float Threshold;
+//    float Boost;
 //};
 
-//// 资源：两路输入 + 显著图 + 输出 UAV
+//// 资源名保持和 C++ 绑定一致
 //Texture2D LowTex;
 //SamplerState LowTexSampler;
 
@@ -250,7 +40,6 @@
 
 #include "/Engine/Public/Platform.ush"
 
-
 cbuffer CompositeCB
 {
     float2 OutputSize;
@@ -258,13 +47,10 @@ cbuffer CompositeCB
     float Boost;
 };
 
-// 资源名保持和 C++ 绑定一致
 Texture2D LowTex;
 SamplerState LowTexSampler;
-
 Texture2D HighTex;
 SamplerState HighTexSampler;
-
 Texture2D SalTex;
 SamplerState SalTexSampler;
 
@@ -276,13 +62,14 @@ void MainCS(uint3 DTid : SV_DispatchThreadID)
     if (DTid.x >= OutputSize.x || DTid.y >= OutputSize.y)
         return;
 
-    float2 uv = (float2(DTid.xy) + 0.5) / OutputSize;
+    // 先用纯色验证写入路径正确
+    //OutTex[DTid.xy] = float4(1, 0, 1, 1);
 
+    // 再恢复真正逻辑
+    float2 uv = (float2(DTid.xy) + 0.5) / OutputSize;
     float4 lowC = LowTex.SampleLevel(LowTexSampler, uv, 0);
     float4 highC = HighTex.SampleLevel(HighTexSampler, uv, 0);
     float s = SalTex.SampleLevel(SalTexSampler, uv, 0).r;
-
-    // 简单权重： (s - Threshold) * Boost → [0,1]
     float w = saturate((s - Threshold) * Boost);
     OutTex[DTid.xy] = lerp(lowC, highC, w);
 }

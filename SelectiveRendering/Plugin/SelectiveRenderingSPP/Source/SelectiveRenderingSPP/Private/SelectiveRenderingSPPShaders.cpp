@@ -1,6 +1,5 @@
-﻿// SelectiveRenderingSPPShaders.cpp
-#include "CoreMinimal.h"                   // 确保有 ensure/UE_LOG
-#include "SelectiveRenderingSPPShaders.h"
+﻿#include "SelectiveRenderingSPPShaders.h"
+#include "CoreMinimal.h"  
 #include "GlobalShader.h"
 #include "RHI.h"
 #include "RHIResources.h"

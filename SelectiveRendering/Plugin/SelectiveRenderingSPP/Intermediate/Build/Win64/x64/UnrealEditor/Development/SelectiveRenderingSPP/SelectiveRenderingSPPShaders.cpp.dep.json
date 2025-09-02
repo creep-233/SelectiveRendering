@@ -6,25 +6,7 @@
         "PCH": "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\intermediate\\build\\win64\\x64\\selectiverenderingeditor\\development\\unrealed\\sharedpch.unrealed.project.valapi.cpp20.h.pch",
         "Includes": [
             "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\selectiverenderingspp\\definitions.selectiverenderingspp.h",
-            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\source\\selectiverenderingspp\\public\\selectiverenderingsppshaders.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\shaderparameterstruct.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphresources.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rhi\\public\\rhitransientresourceallocator.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphparameter.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphresources.inl",
-            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\source\\selectiverenderingspp\\public\\selectiverenderingspp.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphutils.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphbuilder.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphblackboard.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\core\\public\\misc\\generatedtypename.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphevent.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphevent.inl",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphpass.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphparameters.inl",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphtrace.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphvalidation.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\core\\public\\experimental\\containers\\robinhoodhashtable.h",
-            "d:\\dev\\ue5\\ue_5.5\\engine\\source\\runtime\\rendercore\\public\\rendergraphbuilder.inl"
+            "d:\\dev\\project\\ue5\\selectiverendering\\selectiverendering\\plugins\\selectiverenderingspp\\source\\selectiverenderingspp\\public\\selectiverenderingsppshaders.h"
         ],
         "ImportedModules": [],
         "ImportedHeaderUnits": []

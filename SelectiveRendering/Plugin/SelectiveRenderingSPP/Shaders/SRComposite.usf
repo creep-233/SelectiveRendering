@@ -207,40 +207,42 @@
 //}
 
 
+// /Plugins/SelectiveRenderingSPP/Shaders/SRComposite.usf
 #include "/Engine/Public/Platform.ush"
 
-RWTexture2D<float4> OutTex;
+// 手写常量缓冲，名字要与 C++ 绑定一致
+cbuffer SPPParams
+{
+    float2 OutputSize; // 像素尺寸
+    float Threshold; // 阈值
+    float Boost; // 增益
+};
 
+// 资源：两路输入 + 显著图 + 输出 UAV
 Texture2D LowTex;
-Texture2D HighTex;
-Texture2D SalTex;
-
 SamplerState LowTexSampler;
+
+Texture2D HighTex;
 SamplerState HighTexSampler;
+
+Texture2D SalTex;
 SamplerState SalTexSampler;
 
-// 结构化参数对应的 UBO，名字必须是 "Parameters"
-cbuffer Parameters
-{
-    float2 OutputSize;
-    float Threshold;
-    float Boost;
-};
+RWTexture2D<float4> OutTex;
 
 [numthreads(8, 8, 1)]
 void MainCS(uint3 DTid : SV_DispatchThreadID)
 {
-    if (DTid.x >= (uint) OutputSize.x || DTid.y >= (uint) OutputSize.y)
+    if (DTid.x >= OutputSize.x || DTid.y >= OutputSize.y)
         return;
 
-    float2 uv = (DTid.xy + 0.5) / OutputSize;
-    float4 low = LowTex.Sample(LowTexSampler, uv);
-    float4 high = HighTex.Sample(HighTexSampler, uv);
-    float sal = SalTex.Sample(SalTexSampler, uv).r;
+    float2 uv = (float2(DTid.xy) + 0.5) / OutputSize;
 
-    float w = (sal >= Threshold) ? Boost : 1.0;
-    float4 outc = lerp(low, high, saturate(w * sal));
-    OutTex[DTid.xy] = outc;
+    float4 lowC = LowTex.SampleLevel(LowTexSampler, uv, 0);
+    float4 highC = HighTex.SampleLevel(HighTexSampler, uv, 0);
+    float s = SalTex.SampleLevel(SalTexSampler, uv, 0).r;
+
+    // 简单权重： (s - Threshold) * Boost → [0,1]
+    float w = saturate((s - Threshold) * Boost);
+    OutTex[DTid.xy] = lerp(lowC, highC, w);
 }
-
-
